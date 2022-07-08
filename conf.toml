@@ -3,7 +3,7 @@
 endpoint = "http://localhost:8000"
 client_id = "270c432dff9b409bac69"
 client_secret = "c2b2f9c4da119e41139e06019c544fc2a84338c2"
-jwt_pub_key = """-----BEGIN CERTIFICATE-----
+jwt_pub_key = """-----BEGIN PUBLIC KEY-----
 MIIE+TCCAuGgAwIBAgIDAeJAMA0GCSqGSIb3DQEBCwUAMDYxHTAbBgNVBAoTFENh
 c2Rvb3IgT3JnYW5pemF0aW9uMRUwEwYDVQQDEwxDYXNkb29yIENlcnQwHhcNMjEx
 MDE1MDgxMTUyWhcNNDExMDE1MDgxMTUyWjA2MR0wGwYDVQQKExRDYXNkb29yIE9y
@@ -31,5 +31,5 @@ XzCj70B4lALX6xau1kLEpV9O1GERizYRz5P9NJNA7KoO5AVMp9w0DQTkt+LbXnZE
 HHnWKy8xHQKZF9sR7YBPGLs/Ac6tviv5Ua15OgJ/8dLRZ/veyFfGo2yZsI+hKVU5
 nCCJHBcAyFnm1hdvdwEdH33jDBjNB6ciotJZrf/3VYaIWSalADosHAgMWfXuWP+h
 8XKXmzlxuHbTMQYtZPDgspS5aK+S4Q9wb8RRAYo=
------END CERTIFICATE-----"""
+-----END PUBLIC KEY-----"""
 org_name = "built-in"
