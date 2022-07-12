@@ -8,7 +8,7 @@ Example contains 2 parts:
 | Name     | SDK              | Language         | Source code                                                     |
 | -------- | ---------------- | ---------------- | --------------------------------------------------------------- |
 | Frontend | casdoor-vue-sdk  | Javascript + Vue | https://github.com/casdoor/casdoor-rust-example/tree/master/web |
-| Backend  | casdoor-rust-sdk | Python + Flask   | https://github.com/casdoor/casdoor-rust-example/                |
+| Backend  | casdoor-rust-sdk | Rust             | https://github.com/casdoor/casdoor-rust-example/                |
 
 ## Installation
 
