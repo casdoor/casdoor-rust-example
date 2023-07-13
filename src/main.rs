@@ -32,7 +32,7 @@ fn login() -> Json<String> {
     let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
     let auth_service = AuthService::new(&conf);
 
-    let redirect_url = auth_service.get_signin_url("http://localhost:8081/callback".to_string());
+    let redirect_url = auth_service.get_signin_url("http://localhost:8080/callback".to_string());
     Json(redirect_url)
 }
 

@@ -18,7 +18,7 @@ import App from './App.vue';
 import router from './route/index';
 
 const config = {
-  serverUrl: "http://localhost:8080/api",
+  serverUrl: "http://localhost:5000/api",
 };
 
 const app = createApp(App)

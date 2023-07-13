@@ -12,4 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export let serverUrl = `http://localhost:8080/api`
+export let serverUrl = `http://localhost:5000/api`

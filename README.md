@@ -31,7 +31,7 @@ git clone https://github.com/casdoor/casdoor-rust-example
 
   ```js
   // in ./web/src/config.js
-  export let serverUrl = `http://localhost:8080/api`; // port where rust(backend) runs
+  export let serverUrl = `http://localhost:5000/api`; // port where rust(backend) runs
   ```
 
 - Back end(conf.toml):
@@ -59,4 +59,4 @@ git clone https://github.com/casdoor/casdoor-rust-example
   cargo run
   ```
 
-Now, example runs its front end at port 8081 and runs it's back end at port 8080. You can modify the code and see what will happen.
+Now, example runs its front end at port 8080 and runs it's back end at port 5000. You can modify the code and see what will happen.
