@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(decl_macro)]
 mod util;
 
 use casdoor_rust_sdk::{AuthService, CasdoorConfig};
