@@ -28,12 +28,22 @@ use util::abs_path;
 extern crate rocket;
 
 #[get("/login")]
-fn login() -> Json<String> {
-    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
-    let auth_service = AuthService::new(&conf);
+fn login() -> Result<Json<String>, String> {
+    let path = abs_path("conf.toml").map_err(|err| {
+        let error_msg = format!("Error getting the absolute path of conf.toml: {:?}", err);
+        eprintln!("{}", &error_msg);
+        error_msg
+    })?;
 
+    let conf = CasdoorConfig::from_toml(&path).map_err(|err| {
+        let error_msg = format!("Error parsing the configuration file: {:?}", err);
+        eprintln!("{}", &error_msg);
+        error_msg
+    })?;
+
+    let auth_service = AuthService::new(&conf);
     let redirect_url = auth_service.get_signin_url("http://localhost:8080/callback".to_string());
-    Json(redirect_url)
+    Ok(Json(redirect_url))
 }
 
 #[get("/signup")]
@@ -46,24 +56,45 @@ fn signup() -> Json<String> {
 }
 
 #[get("/auth/<code>")]
-async fn callback(code: String) -> Json<CasdoorUser> {
-    let user = task::spawn_blocking(move || {
-        // perform the computation
-        let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+async fn callback(code: String) -> Result<Json<CasdoorUser>, String> {
+    let user_result = task::spawn_blocking(move || {
+        let conf_path = abs_path("conf.toml").map_err(|_| {
+            let err_msg = "Cannot find conf.toml".to_string();
+            eprintln!("abs_path() error: {}", err_msg);
+            err_msg
+        })?;
+        let conf_str = conf_path.as_str();
+        let conf = CasdoorConfig::from_toml(conf_str).map_err(|_| {
+            let err_msg = "Failed to parse TOML config".to_string();
+            eprintln!("from_toml() error: {}", err_msg);
+            err_msg
+        })?;
+
         let auth_service = AuthService::new(&conf);
+        let token = auth_service.get_auth_token(code).map_err(|e| {
+            let err_msg = e.to_string();
+            eprintln!("get_auth_token() error: {}", err_msg);
+            err_msg
+        })?;
+        let user = auth_service.parse_jwt_token(token).map_err(|e| {
+            let err_msg = e.to_string();
+            eprintln!("parse_jwt_token() error: {}", err_msg);
+            err_msg
+        })?;
 
-        let token = auth_service.get_auth_token(code).unwrap();
-
-        let user = auth_service
-            .parse_jwt_token(token)
-            .expect("parse jwt token failed");
-
-        user
+        Ok(user)
     })
-    .await
-    .unwrap();
+        .await
+        .map_err(|_| {
+            let err_msg = "Failed to process in spawn_blocking".to_string();
+            eprintln!("{}", err_msg);
+            err_msg
+        })?;
 
-    Json(user)
+    match user_result {
+        Ok(user) => Ok(Json(user)),
+        Err(e) => Err(e),
+    }
 }
 
 #[get("/logout")]
