@@ -14,8 +14,12 @@
 
 mod util;
 
+use casdoor_rust_sdk::{
+    ApplicationService, CasdoorApplication, CasdoorCert, CasdoorGroup, CasdoorOrganization,
+    CasdoorPermission, CasdoorResource, CasdoorRole, CasdoorUser, CertService, GroupService,
+    OrganizationService, PermissionService, ResourceService, RoleService, UserService,
+};
 use casdoor_rust_sdk::{AuthService, CasdoorConfig};
-use casdoor_rust_sdk::{CasdoorUser, UserService};
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Header;
 use rocket::response::Redirect;
@@ -84,12 +88,12 @@ async fn callback(code: String) -> Result<Json<CasdoorUser>, String> {
 
         Ok(user)
     })
-        .await
-        .map_err(|_| {
-            let err_msg = "Failed to process in spawn_blocking".to_string();
-            eprintln!("{}", err_msg);
-            err_msg
-        })?;
+    .await
+    .map_err(|_| {
+        let err_msg = "Failed to process in spawn_blocking".to_string();
+        eprintln!("{}", err_msg);
+        err_msg
+    })?;
 
     match user_result {
         Ok(user) => Ok(Json(user)),
@@ -147,6 +151,139 @@ async fn add_user(user: Json<CasdoorUser>) -> Json<u16> {
     Json(code.as_u16())
 }
 
+// Organization routes
+#[get("/organization/list")]
+async fn get_organization_list() -> Json<Vec<CasdoorOrganization>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let organization_service = OrganizationService::new(&conf);
+
+    let organizations = organization_service.get_organizations().await.unwrap();
+    Json(organizations)
+}
+
+#[get("/organization/<name>")]
+async fn get_organization(name: String) -> Json<CasdoorOrganization> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let organization_service = OrganizationService::new(&conf);
+
+    let organization = organization_service.get_organization(name).await.unwrap();
+    Json(organization)
+}
+
+// Application routes
+#[get("/application/list")]
+async fn get_application_list() -> Json<Vec<CasdoorApplication>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let application_service = ApplicationService::new(&conf);
+
+    let applications = application_service.get_applications().await.unwrap();
+    Json(applications)
+}
+
+#[get("/application/<name>")]
+async fn get_application(name: String) -> Json<CasdoorApplication> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let application_service = ApplicationService::new(&conf);
+
+    let application = application_service.get_application(name).await.unwrap();
+    Json(application)
+}
+
+// Group routes
+#[get("/group/list")]
+async fn get_group_list() -> Json<Vec<CasdoorGroup>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let group_service = GroupService::new(&conf);
+
+    let groups = group_service.get_groups().await.unwrap();
+    Json(groups)
+}
+
+#[get("/group/<name>")]
+async fn get_group(name: String) -> Json<CasdoorGroup> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let group_service = GroupService::new(&conf);
+
+    let group = group_service.get_group(name).await.unwrap();
+    Json(group)
+}
+
+// Role routes
+#[get("/role/list")]
+async fn get_role_list() -> Json<Vec<CasdoorRole>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let role_service = RoleService::new(&conf);
+
+    let roles = role_service.get_roles().await.unwrap();
+    Json(roles)
+}
+
+#[get("/role/<name>")]
+async fn get_role(name: String) -> Json<CasdoorRole> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let role_service = RoleService::new(&conf);
+
+    let role = role_service.get_role(name).await.unwrap();
+    Json(role)
+}
+
+// Permission routes
+#[get("/permission/list")]
+async fn get_permission_list() -> Json<Vec<CasdoorPermission>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let permission_service = PermissionService::new(&conf);
+
+    let permissions = permission_service.get_permissions().await.unwrap();
+    Json(permissions)
+}
+
+#[get("/permission/<name>")]
+async fn get_permission(name: String) -> Json<CasdoorPermission> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let permission_service = PermissionService::new(&conf);
+
+    let permission = permission_service.get_permission(name).await.unwrap();
+    Json(permission)
+}
+
+// Resource routes
+#[get("/resource/list")]
+async fn get_resource_list() -> Json<Vec<CasdoorResource>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let resource_service = ResourceService::new(&conf);
+
+    let resources = resource_service.get_resources().await.unwrap();
+    Json(resources)
+}
+
+#[get("/resource/<name>")]
+async fn get_resource(name: String) -> Json<CasdoorResource> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let resource_service = ResourceService::new(&conf);
+
+    let resource = resource_service.get_resource(name).await.unwrap();
+    Json(resource)
+}
+
+// Cert routes
+#[get("/cert/list")]
+async fn get_cert_list() -> Json<Vec<CasdoorCert>> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let cert_service = CertService::new(&conf);
+
+    let certs = cert_service.get_certs().await.unwrap();
+    Json(certs)
+}
+
+#[get("/cert/<name>")]
+async fn get_cert(name: String) -> Json<CasdoorCert> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let cert_service = CertService::new(&conf);
+
+    let cert = cert_service.get_cert(name).await.unwrap();
+    Json(cert)
+}
+
 #[launch]
 fn rocket() -> _ {
     rocket::build().attach(Cors).mount(
@@ -161,6 +298,20 @@ fn rocket() -> _ {
             get_user_list,
             delete_user,
             add_user,
+            get_organization_list,
+            get_organization,
+            get_application_list,
+            get_application,
+            get_group_list,
+            get_group,
+            get_role_list,
+            get_role,
+            get_permission_list,
+            get_permission,
+            get_resource_list,
+            get_resource,
+            get_cert_list,
+            get_cert,
         ],
     )
 }
