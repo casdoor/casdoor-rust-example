@@ -151,6 +151,15 @@ async fn add_user(user: Json<CasdoorUser>) -> Json<u16> {
     Json(code.as_u16())
 }
 
+#[post("/user/update", data = "<user>")]
+async fn update_user(user: Json<CasdoorUser>) -> Json<u16> {
+    let conf = CasdoorConfig::from_toml(abs_path("conf.toml").unwrap().as_str()).unwrap();
+    let user_service = UserService::new(&conf);
+
+    let code = user_service.update_user(user.0).await.unwrap();
+    Json(code.as_u16())
+}
+
 // Organization routes
 #[get("/organization/list")]
 async fn get_organization_list() -> Json<Vec<CasdoorOrganization>> {
@@ -298,6 +307,7 @@ fn rocket() -> _ {
             get_user_list,
             delete_user,
             add_user,
+            update_user,
             get_organization_list,
             get_organization,
             get_application_list,
