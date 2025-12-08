@@ -33,7 +33,60 @@ function logOut() {
   }));
 }
 
+// User management API functions
+function getUserList() {
+  return fetch(`${config.serverUrl}/user/list`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then(res => res.json());
+}
+
+function getUser(name) {
+  return fetch(`${config.serverUrl}/user/${name}`, {
+    method: 'GET',
+    credentials: 'include',
+  }).then(res => res.json());
+}
+
+function addUser(user) {
+  return fetch(`${config.serverUrl}/user/add`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),
+  }).then(res => res.json());
+}
+
+function updateUser(user) {
+  return fetch(`${config.serverUrl}/user/update`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),
+  }).then(res => res.json());
+}
+
+function deleteUser(user) {
+  return fetch(`${config.serverUrl}/user/delete`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),
+  }).then(res => res.json());
+}
+
 export default {
   getAccount,
-  logOut
+  logOut,
+  getUserList,
+  getUser,
+  addUser,
+  updateUser,
+  deleteUser
 }

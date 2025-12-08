@@ -24,6 +24,7 @@ import * as config from "@/config";
 export default {
   name: "authBox",
   data() {
+    return {};
   },
   methods: {
     login() {

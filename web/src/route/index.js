@@ -18,6 +18,7 @@ import homePage from '../views/home.vue';
 import authBox from '../views/authBox.vue';
 
 const routes = [
+  {path: '/', redirect: '/login'},
   {path: '/home', component: homePage,},
   {path: '/callback', component: callbackPage,},
   {path: '/login', component: authBox,}
