@@ -33,3 +33,4 @@ nCCJHBcAyFnm1hdvdwEdH33jDBjNB6ciotJZrf/3VYaIWSalADosHAgMWfXuWP+h
 8XKXmzlxuHbTMQYtZPDgspS5aK+S4Q9wb8RRAYo=
 -----END CERTIFICATE-----"""
 org_name = "casbin"
+app_name = "app-vue-python-example"

@@ -62,3 +62,53 @@ Note: the `certificate` field is omitted as `<...>` due to limited space. For fu
   ```
 
 Now, example runs its front end at port 8080 and runs it's back end at port 5000. You can modify the code and see what will happen.
+
+## RBAC with domains (tenants)
+
+In Casdoor, a domain is not an object of its own, it's a name listed in the `domains` field of a role or a permission. So the example manages domains by updating roles and permissions, and checks a user's rights in a domain with the `enforce` API. The permission's model must be an RBAC with domains model, for example:
+
+```ini
+[request_definition]
+r = sub, dom, obj, act
+
+[policy_definition]
+p = sub, dom, obj, act
+
+[role_definition]
+g = _, _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
+```
+
+| Method | API                                          | Description                                             |
+|--------|----------------------------------------------|---------------------------------------------------------|
+| GET    | `/api/domain/list`                           | List the domains used by all the roles and permissions  |
+| POST   | `/api/role/<name>/domain/<domain>`           | Add a domain to a role                                  |
+| DELETE | `/api/role/<name>/domain/<domain>`           | Remove a domain from a role                             |
+| POST   | `/api/permission/<name>/domain/<domain>`     | Add a domain to a permission                            |
+| DELETE | `/api/permission/<name>/domain/<domain>`     | Remove a domain from a permission                       |
+| POST   | `/api/enforce`                               | Check whether a user can do an action in a domain       |
+
+Check a user's right in a domain:
+
+```shell
+curl -X POST http://localhost:5000/api/enforce \
+  -H "Content-Type: application/json" \
+  -d '{"permissionId": "casbin/permission-1", "user": "casbin/alice", "domain": "domain1", "resource": "data1", "action": "read"}'
+```
+
+It returns `true` or `false`. The same can be done with the SDK directly:
+
+```rust
+let mut role = client.get_role("role-1").await?.unwrap();
+role.domains.push("domain1".to_string());
+client.update_role(&role).await?;
+
+let allowed = client
+    .enforce("casbin/permission-1", "", "", "", "", &vec!["casbin/alice".into(), "domain1".into(), "data1".into(), "read".into()])
+    .await?;
+```
