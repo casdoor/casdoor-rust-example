@@ -2,34 +2,24 @@
 
 An example web app that uses [Casdoor](https://casdoor.org) for sign-in and authorization through [casdoor-rust-sdk](https://github.com/casdoor/casdoor-rust-sdk). It shows how to:
 
-- sign users in and up with Casdoor (OAuth 2.0 authorization code flow)
-- read and manage users
+- sign users in and up with Casdoor (OAuth 2.0 authorization code flow) and keep them in a session
+- list, add and delete the users of an organization
 - manage domains (tenants) and check a user's rights in a domain (RBAC with domains)
 
-| Part     | Stack                          | Port | Source        |
-|----------|--------------------------------|------|---------------|
-| Backend  | Rust, Rocket, casdoor-rust-sdk | 5000 | [`src/`](src) |
-| Frontend | Vue 3                          | 8080 | [`web/`](web) |
+The backend is a [Rocket](https://rocket.rs) server in [`src/`](src), the frontend is a React app in [`web/`](web). The server also serves the built React app, so everything runs on one port: http://localhost:8080.
 
 ## Quick start
 
-You need Rust (stable), Node.js and Yarn. The repo is configured for the Casdoor demo site [door.casdoor.com](https://door.casdoor.com), so it runs without any setup:
+You need Rust (stable) and Node.js 20.19+ with Yarn. The repo is configured for the Casdoor demo site [door.casdoor.com](https://door.casdoor.com), so it runs without any setup:
 
 ```shell
 git clone https://github.com/casdoor/casdoor-rust-example
 cd casdoor-rust-example
+cd web && yarn install && yarn build && cd ..
 cargo run
 ```
 
-In another terminal:
-
-```shell
-cd web
-yarn install
-yarn serve
-```
-
-Open http://localhost:8080 and click **Sign in**. After signing in on Casdoor you are redirected back and the home page shows your user info.
+Open http://localhost:8080 and click **Sign in**.
 
 ## Use your own Casdoor
 
@@ -42,55 +32,61 @@ Open http://localhost:8080 and click **Sign in**. After signing in on Casdoor yo
    client_id = "<client ID of the application>"
    client_secret = "<client secret of the application>"
    certificate = """-----BEGIN CERTIFICATE-----
-   <the application's certificate, see Certs in Casdoor>
+   <the certificate of the application, see Certs in Casdoor>
    -----END CERTIFICATE-----"""
    org_name = "<organization name>"
    app_name = "<application name>"
    ```
 
-The backend reads `conf.toml` from the current directory, so run `cargo run` from the repo root. The backend URL used by the frontend is set in [`web/src/config.js`](web/src/config.js).
+The port, the callback URL and the folder of the React app are set in [`Rocket.toml`](Rocket.toml). Run `cargo run` from the repo root, since `conf.toml` and `Rocket.toml` are read from the current folder.
 
-## How sign-in works
+## How it works
 
-1. The frontend calls `GET /api/login`, the backend returns the Casdoor sign-in URL (`client.get_signin_url()`), and the browser goes there.
-2. After signing in, Casdoor redirects to `http://localhost:8080/callback?code=...`.
-3. The frontend sends the code to `GET /api/auth/<code>`. The backend exchanges it for an access token (`client.get_oauth_token()`), verifies the token with the certificate and returns the user (`client.parse_jwt_token()`).
-4. The frontend keeps the user in `localStorage` and shows it on `/home`.
+Sign-in uses the OAuth 2.0 authorization code flow, see [`src/auth.rs`](src/auth.rs):
 
-## Backend APIs
+1. **Sign in** opens `/api/signin`, which redirects the browser to the Casdoor sign-in page. A random `state` is kept in a cookie to stop login CSRF.
+2. After signing in, Casdoor redirects the browser to `/callback?code=...&state=...`.
+3. The server checks the `state`, exchanges the code for an access token (`client.get_oauth_token()`) and verifies the token with the certificate (`client.parse_jwt_token()`).
+4. The user is kept in a server-side session, the browser only gets a random session ID in an HttpOnly cookie. The React app reads the user from `/api/account`.
+5. **Sign out** deletes the session and ends the user's session in Casdoor too (`client.logout_current_session()`).
 
-All APIs are under `http://localhost:5000/api`. Errors are returned as plain text with status 404 or 500.
+The other APIs call Casdoor as the application, with the client ID and secret in `conf.toml`, see [`src/api.rs`](src/api.rs). They need a signed-in user, and the ones that change data need an admin of the organization. Otherwise they return 401 or 403.
 
-| Method | Path                                    | Description                                              |
-|--------|-----------------------------------------|----------------------------------------------------------|
-| GET    | `/login`                                | Casdoor sign-in URL                                      |
-| GET    | `/signup`                               | Casdoor sign-up URL                                      |
-| GET    | `/auth/<code>`                          | Exchange an authorization code for the signed-in user    |
-| GET    | `/user/list`                            | All users of the organization                            |
-| GET    | `/user/<name>`                          | One user                                                 |
-| GET    | `/user/count/<is_online>`               | Number of online (`1`) or offline (`0`) users            |
-| POST   | `/user/add`                             | Add a user (JSON body), returns `true` if added          |
-| POST   | `/user/delete`                          | Delete a user (JSON body), returns `true` if deleted     |
-| GET    | `/domain/list`                          | Domains used by the organization's roles and permissions |
-| POST   | `/role/<name>/domain/<domain>`          | Add a domain to a role                                   |
-| DELETE | `/role/<name>/domain/<domain>`          | Remove a domain from a role                              |
-| POST   | `/permission/<name>/domain/<domain>`    | Add a domain to a permission                             |
-| DELETE | `/permission/<name>/domain/<domain>`    | Remove a domain from a permission                        |
-| POST   | `/enforce`                              | Check whether a user can do an action in a domain        |
+Sessions are kept in memory to keep the example short, so restarting the server signs everyone out. A real app would keep them in a database or Redis.
 
-The APIs other than sign-in are called with the application's client ID and secret, so the application must belong to the organization it manages. The demo site's application doesn't, so `/enforce` and the write APIs need your own Casdoor.
+## APIs
+
+| Method | Path                                       | Who    | Description                                       |
+|--------|--------------------------------------------|--------|---------------------------------------------------|
+| GET    | `/api/signin`                              | anyone | Redirect to the Casdoor sign-in page              |
+| GET    | `/api/signup`                              | anyone | Redirect to the Casdoor sign-up page              |
+| GET    | `/callback`                                | anyone | Casdoor redirects here after sign-in              |
+| GET    | `/api/account`                             | user   | The signed-in user                                |
+| POST   | `/api/signout`                             | anyone | Sign out of this app and of Casdoor               |
+| GET    | `/api/users`                               | user   | The users of the organization                     |
+| POST   | `/api/users`                               | admin  | Add a user: `{"name", "displayName", "password"}` |
+| DELETE | `/api/users/<name>`                        | admin  | Delete a user                                     |
+| GET    | `/api/roles`                               | user   | The roles of the organization                     |
+| GET    | `/api/permissions`                         | user   | The permissions of the organization               |
+| POST   | `/api/roles/<name>/domains/<domain>`       | admin  | Add a domain to a role                            |
+| DELETE | `/api/roles/<name>/domains/<domain>`       | admin  | Remove a domain from a role                       |
+| POST   | `/api/permissions/<name>/domains/<domain>` | admin  | Add a domain to a permission                      |
+| DELETE | `/api/permissions/<name>/domains/<domain>` | admin  | Remove a domain from a permission                 |
+| POST   | `/api/enforce`                             | user   | Check whether a user can do an action in a domain |
+
+Errors are returned as `{"error": "..."}`.
 
 ## RBAC with domains
 
-A domain (tenant) lets one user have different roles in different places, e.g. admin in `domain1` but only a reader in `domain2`. In Casdoor a domain is not a separate object, it's a name in the **Domains** field of a role or a permission:
+A domain (tenant) lets one user have different rights in different places, e.g. a reader in `domain1` but nothing in `domain2`. In Casdoor a domain is not a separate object, it's a name in the **Domains** field of a role or a permission:
 
 - creating a domain = adding its name to a role or permission
 - deleting a domain = removing it from them
 - checking a right = calling enforce with `[user, domain, resource, action]`
 
-To try it in your own Casdoor:
+To try it, in your own Casdoor:
 
-1. Create a model with domains:
+1. Create a model with a domain in its request:
 
    ```ini
    [request_definition]
@@ -109,23 +105,20 @@ To try it in your own Casdoor:
    m = g(r.sub, p.sub, r.dom) && r.dom == p.dom && r.obj == p.obj && r.act == p.act
    ```
 
-2. Create a role (e.g. `role-1`) with some users, and a permission (e.g. `permission-1`) that uses the model, the role, some resources and actions.
-3. Add a domain to both:
+2. Create a role with some users and the domain `domain1`.
+3. Create a permission with the model above, **Resource type** `Custom` (Casdoor only allows 3-field models for the `Application` type), the role, the domain `domain1`, and some resources and actions, e.g. `data1` and `read`.
+4. Sign in to the example as an admin of the organization and open **Domains**. You can add and remove domains of the roles and permissions there, and check a right, e.g. whether `my-org/alice` can `read` `data1` in `domain1`.
 
-   ```shell
-   curl -X POST http://localhost:5000/api/role/role-1/domain/domain1
-   curl -X POST http://localhost:5000/api/permission/permission-1/domain/domain1
-   ```
+The same with curl, using the session cookie of a signed-in browser:
 
-4. Check a user's right in the domain, the result is `true` or `false`:
+```shell
+curl -X POST http://localhost:8080/api/enforce \
+  -H "Content-Type: application/json" \
+  -H "Cookie: session_id=<session ID>" \
+  -d '{"permissionId": "my-org/permission-1", "user": "my-org/alice", "domain": "domain1", "resource": "data1", "action": "read"}'
+```
 
-   ```shell
-   curl -X POST http://localhost:5000/api/enforce \
-     -H "Content-Type: application/json" \
-     -d '{"permissionId": "my-org/permission-1", "user": "my-org/alice", "domain": "domain1", "resource": "data1", "action": "read"}'
-   ```
-
-The same with the SDK directly:
+And with the SDK directly:
 
 ```rust
 use casdoor_rust_sdk::Client;
@@ -133,14 +126,27 @@ use casdoor_rust_sdk::Client;
 let client = Client::from_toml("conf.toml")?;
 
 let mut role = client.get_role("role-1").await?.unwrap();
-role.domains.push("domain1".to_string());
+role.domains.push("domain2".to_string());
 client.update_role(&role).await?;
 
 let request = vec!["my-org/alice".into(), "domain1".into(), "data1".into(), "read".into()];
 let allowed = client.enforce("my-org/permission-1", "", "", "", "", &request).await?;
 ```
 
-See [`src/main.rs`](src/main.rs) for the full code.
+The demo site doesn't allow its application to call enforce or change data, so those only work with your own Casdoor.
+
+## Develop the frontend
+
+`yarn dev` serves the React app at http://localhost:5173 with hot reload, and forwards `/api` and `/callback` to the Rust server. Start the server with the callback URL of the dev server, and add that URL to the application's Redirect URLs in Casdoor:
+
+```shell
+ROCKET_REDIRECT_URI=http://localhost:5173/callback cargo run
+```
+
+```shell
+cd web
+yarn dev
+```
 
 ## Links
 

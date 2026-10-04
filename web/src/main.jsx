@@ -1,4 +1,4 @@
-// Copyright 2022 The Casdoor Authors. All Rights Reserved.
+// Copyright 2026 The Casdoor Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as config from "@/config";
+import {StrictMode} from "react";
+import {createRoot} from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
 
-function getAccount() {
-  return fetch(`${config.serverUrl}/api/get-account`, {
-    method: 'GET',
-    credentials: 'include',
-  }).then(res => {
-    console.log(res)
-    return res.json()
-  });
-}
-
-function logOut() {
-  return fetch(`${config.serverUrl}/api/signout`, {
-    method: 'POST',
-    credentials: 'include',
-  }).then((res => {
-    return res.json()
-  }));
-}
-
-export default {
-  getAccount,
-  logOut
-}
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);

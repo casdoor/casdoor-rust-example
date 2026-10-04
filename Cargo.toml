@@ -2,10 +2,10 @@
 name = "casdoor-rust-example"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "Apache-2.0"
 
 [dependencies]
 casdoor-rust-sdk = "1.4.0"
 rocket = { version = "0.5", features = ["json"] }
-serde = "1.0.138"
+serde = { version = "1", features = ["derive"] }
+uuid = { version = "1", features = ["v4"] }

@@ -1,2 +1,9 @@
-[global]
-port = 5000
+[default]
+port = 8080
+
+# Casdoor redirects the browser back to this URL after sign-in, it must be allowed in the
+# Redirect URLs of the Casdoor application.
+redirect_uri = "http://localhost:8080/callback"
+
+# The built React app, see web/.
+static_dir = "web/dist"
