@@ -5,7 +5,7 @@ edition = "2021"
 license = "Apache-2.0"
 
 [dependencies]
-casdoor-rust-sdk = "1.4.0"
+casdoor-rust-sdk = "1.6.2"
 rocket = { version = "0.5", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 uuid = { version = "1", features = ["v4"] }

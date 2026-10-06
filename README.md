@@ -1,6 +1,10 @@
 # Casdoor Rust Example
 
-An example web app that uses [Casdoor](https://casdoor.org) for sign-in and authorization through [casdoor-rust-sdk](https://github.com/casdoor/casdoor-rust-sdk). It shows how to:
+[![Build](https://github.com/casdoor/casdoor-rust-example/actions/workflows/build.yml/badge.svg)](https://github.com/casdoor/casdoor-rust-example/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/casdoor/casdoor-rust-example)](https://github.com/casdoor/casdoor-rust-example/blob/master/LICENSE)
+[![Discord](https://img.shields.io/discord/1022748306096537660?logo=discord&label=discord&color=5865F2)](https://discord.gg/5rPsrAzK7S)
+
+An example web app that uses [Casdoor](https://casdoor.ai) for sign-in and authorization through [casdoor-rust-sdk](https://github.com/casdoor/casdoor-rust-sdk). It shows how to:
 
 - sign users in and up with Casdoor (OAuth 2.0 authorization code flow) and keep them in a session
 - list, add and delete the users of an organization
@@ -23,7 +27,7 @@ Open http://localhost:8080 and click **Sign in**.
 
 ## Use your own Casdoor
 
-1. [Install Casdoor](https://casdoor.org/docs/basic/server-installation) and sign in as admin.
+1. [Install Casdoor](https://casdoor.ai/docs/basic/server-installation) and sign in as admin.
 2. Create an organization and an application in it. Add `http://localhost:8080/callback` to the application's **Redirect URLs**.
 3. Fill in [`conf.toml`](conf.toml) with the application's settings:
 
@@ -151,8 +155,8 @@ yarn dev
 ## Links
 
 - [casdoor-rust-sdk](https://github.com/casdoor/casdoor-rust-sdk) ([docs.rs](https://docs.rs/casdoor-rust-sdk))
-- [Casdoor docs](https://casdoor.org/docs/overview)
-- [Casdoor permissions](https://casdoor.org/docs/permission/overview)
+- [Casdoor docs](https://casdoor.ai/docs/overview)
+- [Casdoor permissions](https://casdoor.ai/docs/permission/overview)
 
 ## License
 
